@@ -16,11 +16,11 @@ log = Logger().setup_logger('CALIBRATE SERVOS')
 
 log.info('Calibrate rest position...')
 
-#gpio_port = Config().get(Config.ABORT_CONTROLLER_GPIO_PORT)
-#GPIO.cleanup()
-#GPIO.setmode(GPIO.BCM)
-#GPIO.setup(gpio_port, GPIO.OUT)
-#GPIO.output(gpio_port, False)
+gpio_port = Config().get(Config.ABORT_CONTROLLER_GPIO_PORT)
+GPIO.cleanup()
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(gpio_port, GPIO.OUT)
+GPIO.output(gpio_port, False)
 
 pca = None
 

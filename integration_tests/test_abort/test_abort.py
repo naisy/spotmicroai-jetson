@@ -20,7 +20,8 @@ input("Press Enter to start the tests...")
 
 try:
 
-    GPIO.setmode(GPIO.BCM)
+    GPIO.cleanup()
+    GPIO.setmode(GPIO.BOARD)
     GPIO.setup(gpio_port, GPIO.OUT)
 
     GPIO.cleanup()

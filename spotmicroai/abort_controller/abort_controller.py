@@ -21,8 +21,8 @@ class AbortController:
             signal.signal(signal.SIGTERM, self.exit_gracefully)
 
             self.gpio_port = Config().get(Config.ABORT_CONTROLLER_GPIO_PORT)
-
-            GPIO.setmode(GPIO.BCM)
+            GPIO.cleanup()
+            GPIO.setmode(GPIO.BOARD)
             GPIO.setup(self.gpio_port, GPIO.OUT)
 
             self._abort_queue = communication_queues[queues.ABORT_CONTROLLER]

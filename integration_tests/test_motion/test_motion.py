@@ -48,8 +48,8 @@ pca = None
 gpio_port = Config().get('abort_controller[0].gpio_port')
 
 try:
-
-    GPIO.setmode(GPIO.BCM)
+    GPIO.cleanup()
+    GPIO.setmode(GPIO.BOARD)
     GPIO.setup(gpio_port, GPIO.OUT)
 
     GPIO.output(gpio_port, False)
