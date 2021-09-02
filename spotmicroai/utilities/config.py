@@ -128,8 +128,10 @@ class Config(metaclass=Singleton):
 
     values = {}
 
-    def __init__(self):
+    config_path = 'spotmicroai.json'
 
+    def __init__(self, config_path):
+        self.config_path = config_path
         try:
             log.debug('Loading configuration...')
 
@@ -141,16 +143,13 @@ class Config(metaclass=Singleton):
 
     def load_config(self):
         try:
-            if not os.path.exists(str(Path.home()) + '/spotmicroai.json'):
-                shutil.copyfile(str(Path.home()) + '/spotmicroai/spotmicroai.default',
-                                str(Path.home()) + '/spotmicroai.json')
-
-            with open(str(Path.home()) + '/spotmicroai.json') as json_file:
+            with open(self.config_path) as json_file:
                 self.values = json.load(json_file)
                 # log.debug(json.dumps(self.values, indent=4, sort_keys=True))
-
         except Exception as e:
-            log.error("Configuration file don't exist or is not a valid json, aborting.")
+            log.error(f"Configuration file ({self.config_path}) don't exist or is not a valid json, aborting.")
+            import traceback
+            traceback.print_exc()
             sys.exit(1)
 
     def list_modules(self):
@@ -158,10 +157,10 @@ class Config(metaclass=Singleton):
 
     def save_config(self):
         try:
-            with open('~/spotmicroai.json', 'w') as outfile:
+            with open(self.config_path, 'w') as outfile:
                 json.dump(self.values, outfile)
         except Exception as e:
-            log.error("Problem saving the configuration file", e)
+            log.error("Problem saving the configuration file ({self.config_path})", e)
 
     def get(self, search_pattern):
         log.debug(search_pattern + ': ' + str(jmespath.search(search_pattern, self.values)))
@@ -190,3 +189,4 @@ class Config(metaclass=Singleton):
         log.info('REST_ANGLE: ' + str(jmespath.search(REST_ANGLE, self.values)))
 
         return jmespath.search(PCA9685_ADDRESS, self.values), jmespath.search(PCA9685_REFERENCE_CLOCK_SPEED, self.values), jmespath.search(PCA9685_FREQUENCY, self.values), jmespath.search(CHANNEL, self.values), jmespath.search(MIN_PULSE, self.values), jmespath.search(MAX_PULSE, self.values), jmespath.search(REST_ANGLE, self.values)
+
