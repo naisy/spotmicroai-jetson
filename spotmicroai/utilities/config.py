@@ -128,10 +128,8 @@ class Config(metaclass=Singleton):
 
     values = {}
 
-    config_path = 'spotmicroai.json'
+    def __init__(self):
 
-    def __init__(self, config_path):
-        self.config_path = config_path
         try:
             log.debug('Loading configuration...')
 
@@ -140,14 +138,21 @@ class Config(metaclass=Singleton):
 
         except Exception as e:
             log.error('Problem while loading the configuration file', e)
+            import traceback
+            traceback.print_exc()
 
     def load_config(self):
         try:
-            with open(self.config_path) as json_file:
+            if not os.path.exists(str(Path.home()) + '/spotmicroai.json'):
+                shutil.copyfile(str(Path.home()) + '/spotmicroai/spotmicroai.default',
+                                str(Path.home()) + '/spotmicroai.json')
+
+            with open(str(Path.home()) + '/spotmicroai.json') as json_file:
                 self.values = json.load(json_file)
                 # log.debug(json.dumps(self.values, indent=4, sort_keys=True))
+
         except Exception as e:
-            log.error(f"Configuration file ({self.config_path}) don't exist or is not a valid json, aborting.")
+            log.error("Configuration file don't exist or is not a valid json, aborting.")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -157,10 +162,12 @@ class Config(metaclass=Singleton):
 
     def save_config(self):
         try:
-            with open(self.config_path, 'w') as outfile:
+            with open('~/spotmicroai.json', 'w') as outfile:
                 json.dump(self.values, outfile)
         except Exception as e:
-            log.error("Problem saving the configuration file ({self.config_path})", e)
+            log.error("Problem saving the configuration file", e)
+            import traceback
+            traceback.print_exc()
 
     def get(self, search_pattern):
         log.debug(search_pattern + ': ' + str(jmespath.search(search_pattern, self.values)))
