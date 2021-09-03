@@ -90,5 +90,6 @@ while True:
             active_servo.angle = int(user_input)
             time.sleep(0.1)
         finally:
-            pca.reset()
+            #pca.deinit()
+            pass
 

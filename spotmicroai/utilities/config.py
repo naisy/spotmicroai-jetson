@@ -143,13 +143,10 @@ class Config(metaclass=Singleton):
 
     def load_config(self):
         try:
-            if not os.path.exists(str(Path.home()) + '/spotmicroai.json'):
-                shutil.copyfile(str(Path.home()) + '/spotmicroai/spotmicroai.default',
-                                str(Path.home()) + '/spotmicroai.json')
-
             with open(str(Path.home()) + '/spotmicroai.json') as json_file:
                 self.values = json.load(json_file)
                 # log.debug(json.dumps(self.values, indent=4, sort_keys=True))
+                return self.values
 
         except Exception as e:
             log.error("Configuration file don't exist or is not a valid json, aborting.")
