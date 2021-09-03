@@ -9,7 +9,7 @@ This repository is a fork of [https://gitlab.com/custom_robots/spotmicroai/basic
 * PCA9685 0x40
 * PCA9685 0x41
 * SpotMicro Robot Dog
-
+* F710 Wireless Gamepad
 
 ## Install
 
