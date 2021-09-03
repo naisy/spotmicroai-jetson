@@ -38,12 +38,12 @@ cp spotmicroai.json ~/
 ```
 
 
-[Calibration]
+## Calibration
 ```
 python3 calibration.py
 ```
 
-[Run]
+## Run
 ```
 python3 main.py
 ```
