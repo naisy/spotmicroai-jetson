@@ -157,10 +157,10 @@ class Config(metaclass=Singleton):
     def list_modules(self):
         log.info('Detected configuration for the modules: ' + ', '.join(self.values.keys()))
 
-    def save_config(self):
+    def save_config(self, values):
         try:
-            with open('~/spotmicroai.json', 'w') as outfile:
-                json.dump(self.values, outfile)
+            with open(str(Path.home()) + '/spotmicroai.json', 'w') as outfile:
+                json.dump(values, outfile, indent=4)
         except Exception as e:
             log.error("Problem saving the configuration file", e)
             import traceback

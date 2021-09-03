@@ -26,6 +26,11 @@ pca = None
 
 i2c = busio.I2C(SCL, SDA)
 
+def update_spotmicroai_json_value(json_values, calib_value):
+    new_value = {'pca9685':calib_value['pca9685'], 'channel':calib_value['channel'], 'min_pulse':calib_value['min_pulse'], 'max_pulse':calib_value['max_pulse'], 'rest_angle':calib_value['rest_angle']}
+    json_values['motion_controller'][0]['servos'][0][calib_value['servo']][0].update(new_value)
+    return json_values
+
 while True:
     options = {
         0: 'rear_shoulder_left   - PCA[' + str(Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_LEFT_PCA9685)) + '] CHANNEL[' + str(Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_LEFT_CHANNEL)) + ']  - ANGLE[' + str(Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_LEFT_REST_ANGLE)) + ']',
@@ -51,6 +56,7 @@ while True:
             '3. if no angle is specified 90 will be the default position, for example if you just press Enter' + os.linesep + \
             '' + os.linesep + \
             'Write "menu" or "m" and press Enter to return to the list of servos' + os.linesep + \
+            'Write "save" or "s" and press Enter to save configuration' + os.linesep + \
             'Write "exit" or "e" and press Enter to exit' + os.linesep + \
             '' + os.linesep + \
             'Please choose the servo to calibrate its rest position: '
@@ -61,34 +67,70 @@ while True:
 
     PCA9685_ADDRESS, PCA9685_REFERENCE_CLOCK_SPEED, PCA9685_FREQUENCY, CHANNEL, MIN_PULSE, MAX_PULSE, REST_ANGLE = Config().get_by_section_name(selected_option.split()[0])
 
-    while True:
+    # Define calibration part of json file
+    calib_dict = []
+    calib_dict.append({'servo':'rear_shoulder_left', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_LEFT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_LEFT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_LEFT_REST_ANGLE)})
+    calib_dict.append({'servo':'rear_leg_left', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_LEG_LEFT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_LEG_LEFT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_LEG_LEFT_REST_ANGLE)})
+    calib_dict.append({'servo':'rear_feet_left', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_FEET_LEFT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_FEET_LEFT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_FEET_LEFT_REST_ANGLE)})
+    calib_dict.append({'servo':'rear_shoulder_right', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_RIGHT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_RIGHT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_SHOULDER_RIGHT_REST_ANGLE)})
+    calib_dict.append({'servo':'rear_leg_right', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_LEG_RIGHT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_LEG_RIGHT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_LEG_RIGHT_REST_ANGLE)})
+    calib_dict.append({'servo':'rear_feet_right', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_FEET_RIGHT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_FEET_RIGHT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_REAR_FEET_RIGHT_REST_ANGLE)})
+    calib_dict.append({'servo':'front_shoulder_left', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_SHOULDER_LEFT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_SHOULDER_LEFT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_SHOULDER_LEFT_REST_ANGLE)})
+    calib_dict.append({'servo':'front_leg_left', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_LEG_LEFT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_LEG_LEFT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_LEG_LEFT_REST_ANGLE)})
+    calib_dict.append({'servo':'front_feet_left', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_FEET_LEFT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_FEET_LEFT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_FEET_LEFT_REST_ANGLE)})
+    calib_dict.append({'servo':'front_shoulder_right', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_SHOULDER_RIGHT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_SHOULDER_RIGHT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_SHOULDER_RIGHT_REST_ANGLE)})
+    calib_dict.append({'servo':'front_leg_right', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_LEG_RIGHT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_LEG_RIGHT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_LEG_RIGHT_REST_ANGLE)})
+    calib_dict.append({'servo':'front_feet_right', 'pca9685':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_FEET_RIGHT_PCA9685), 'channel':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_FEET_RIGHT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_FRONT_FEET_RIGHT_REST_ANGLE)})
+    calib_dict.append({'servo':'arm_rotation', 'pca9685':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_ROTATION_PCA9685), 'channel':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_ROTATION_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_ARM_ROTATION_REST_ANGLE)})
+    calib_dict.append({'servo':'arm_lift', 'pca9685':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_LIFT_PCA9685), 'channel':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_LIFT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_ARM_LIFT_REST_ANGLE)})
+    calib_dict.append({'servo':'arm_range', 'pca9685':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_RANGE_PCA9685), 'channel':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_RANGE_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_ARM_RANGE_REST_ANGLE)})
+    calib_dict.append({'servo':'arm_cam_tilt', 'pca9685':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_CAM_TILT_PCA9685), 'channel':Config().get(Config.ARM_CONTROLLER_SERVOS_ARM_CAM_TILT_CHANNEL), 'min_pulse':MIN_PULSE, 'max_pulse':MAX_PULSE, 'rest_angle':Config().get(Config.MOTION_CONTROLLER_SERVOS_ARM_CAM_TILT_REST_ANGLE)})
 
+    # prepare selected PCA9685
+    print("Preparing the pca9685 board...")
+    pca = PCA9685(i2c, address=int(PCA9685_ADDRESS, 0))  # super slow. 10s
+    pca.frequency = PCA9685_FREQUENCY
+
+
+    json_values = Config().load_config()
+    while True:
         try:
-            user_input = input("Write the angle and press Enter, or press Enter for 90: ")
-            print(f'address: {PCA9685_ADDRESS} -> {int(PCA9685_ADDRESS, 0)}')
+            user_input = input("Write the angle 0-180 and press Enter. 'm' back to menue, 's' save, 'q' exit: ")
+            """
+            print(f'address: int({PCA9685_ADDRESS}): {int(PCA9685_ADDRESS, 0)}')
             print(f'clock: {PCA9685_REFERENCE_CLOCK_SPEED}')
             print(f'freq: {PCA9685_FREQUENCY}')
             print(f'channel: {CHANNEL}')
             print(f'min_pulse: {MIN_PULSE}')
             print(f'max_pulse: {MAX_PULSE}')
             print(f'rest_angle: {REST_ANGLE}')
-
-            #pca = PCA9685(address=int(PCA9685_ADDRESS, 0), i2c=i2c)
-            pca = PCA9685(i2c, address=int(PCA9685_ADDRESS, 0))
-            pca.frequency = PCA9685_FREQUENCY
-
-            active_servo = servo.Servo(pca.channels[CHANNEL])
-            active_servo.set_pulse_width_range(min_pulse=MIN_PULSE, max_pulse=MAX_PULSE)
+            """
 
             if user_input == 'menu' or user_input == 'm':
                 break
-            if user_input == 'exit' or user_input == 'e':
+            elif user_input == 'save' or user_input == 's':
+                print('saving...')
+                Config().save_config(json_values)
+            elif user_input == 'exit' or user_input == 'e':
                 sys.exit(0)
             elif user_input == '':
-                user_input = 90
+                # do nothing
+                continue
+            elif user_input.isdecimal:
+                #print(f'int: {user_input}')
+                angle = int(user_input)
+                if 0 <= angle and angle <= 180:
+                    active_servo = servo.Servo(pca.channels[CHANNEL])
+                    active_servo.set_pulse_width_range(min_pulse=MIN_PULSE, max_pulse=MAX_PULSE)
+                    active_servo.angle = int(angle)
+                    calib_dict[selected_index].update({'rest_angle':angle})
+                    json_values = update_spotmicroai_json_value(json_values, calib_dict[selected_index])
+                    time.sleep(0.1)
+                else:
+                    print('Out of range. 0-180.')
+            else:
+                print(f'Unknown input: {user_input}')
 
-            active_servo.angle = int(user_input)
-            time.sleep(0.1)
         finally:
             #pca.deinit()
             pass
